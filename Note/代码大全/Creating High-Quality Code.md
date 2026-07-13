@@ -186,6 +186,53 @@
 - 尽可能地限制类和成员的可访问性。实际上目的还是保护接口抽象的完整性，即如果修改后需要暴露的新的接口不会破坏“同一抽象层次”，则做法才是可行的。
 - 不要公开暴露成员数据
 - 警惕从语义上破坏封装性
+```一个例子
+// 语法上封装了：字段是 private
+class EmployeeDatabase
+{
+    private Employee[] _employees;      // 数组
+    private int _currentIndex;
+
+    // 接口暴露了数组索引，调用者立刻知道内部用的是数组
+    public Employee GetByIndex(int index)
+    {
+        return _employees[index];
+    }
+
+    // 接口暴露了容量，调用者知道内部有固定大小限制
+    public int GetCapacity()
+    {
+        return _employees.Length;
+    }
+
+    // 接口直接返回内部数组引用
+    public Employee[] GetAllEmployees()
+    {
+        return _employees;
+    }
+}
+这个类虽然所有字段都是 private 的，但调用方能从接口读出来三件事：内部存的是数组、数组有固定容量、可以直接拿到那个数组的引用。这就是从语义上破坏了封装——以后你想换成 List 或者数据库存储，所有依赖这些接口的外部代码全部要改。
+
+修正方式是让接口只说"做什么"，不说"底层用什么存"：
+class EmployeeDatabase
+{
+    private Employee[] _employees;
+    private int _currentIndex;
+
+    // 按 ID 取员工，不暴露索引
+    public Employee GetById(int employeeId) { ... }
+
+    // 按名字取，不暴露存储结构
+    public List<Employee> FindByName(string name) { ... }
+
+    // 拿到的只是复制出来的集合，不是内部数组引用
+    public IReadOnlyList<Employee> GetAll()
+    {
+        return _employees.Take(_currentIndex).ToList();
+    }
+}
+现在外部调用者完全不知道内部用的是数组还是链表还是数据库——接口只说"我帮你查人"，不说"我有几个格子"。这就是语义上封装的完整性。
+```
 
 ### 6.3 有关设计和实现的问题
 - 包含  
