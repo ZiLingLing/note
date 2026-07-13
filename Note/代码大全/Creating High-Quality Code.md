@@ -190,7 +190,7 @@
 // 语法上封装了：字段是 private
 class EmployeeDatabase
 {
-    private Employee[] _employees;      // 数组
+    private Employee[] _employees;
     private int _currentIndex;
 
     // 接口暴露了数组索引，调用者立刻知道内部用的是数组
